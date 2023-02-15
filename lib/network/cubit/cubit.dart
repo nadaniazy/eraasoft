@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:eraasoftproject/local/shared_keys.dart';
@@ -13,7 +16,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../component/button.dart';
-import '../../model/Products.dart';
+import '../../model/Products.dart' as product;
 import '../../model/categories.dart';
 import '../../screens/Accounts.dart';
 import '../../screens/Favourits.dart';
@@ -58,17 +61,14 @@ class appcubit extends Cubit<appstates> {
 
   void makeLogin(String email, String password, context) async {
     emit(loadingstatelogin());
-    await DioHelper.postData(
-        endPoint: loginn,
-        query: {'email': email, 'password': password}).then((value) {
+    await DioHelper.postData(endPoint: loginn, query: {'email': email, 'password': password}).then((value) {
       emit(successstatelogin());
       print(value.data);
 
       SharedPrefernce.put(key: SharedKeys().token, value: value.data["token"]);
-
-      print(token);
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => Mainhome()));
+      if(value.data['code'] == 200) {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => Mainhome()));
+      }
     }).catchError((error) {
       emit(errorstatelogin());
       print(error.toString());
@@ -79,7 +79,10 @@ class appcubit extends Cubit<appstates> {
 
   void getcategories() {
     emit(loadingstatecategories());
-    DioHelper.getData(endPoint: categories, token: token).then((value) {
+    DioHelper.getData(
+      endPoint: categories,
+      token: SharedPrefernce.get(key: SharedKeys().token),
+    ).then((value) {
       print(value.data);
       categoriess = Categories.fromJson(value.data);
       // print(categoriess?.message);
@@ -90,13 +93,16 @@ class appcubit extends Cubit<appstates> {
     });
   }
 
-  Products? productsList;
+  product.Products? productsList;
 
   void getproducts() {
     emit(loadingstateproduct());
-    DioHelper.getData(endPoint: products, token: token).then((value) {
+    DioHelper.getData(
+      endPoint: products,
+      token: SharedPrefernce.get(key: SharedKeys().token),
+    ).then((value) {
       print(value.data);
-      productsList = Products.fromJson(value.data);
+      productsList = product.Products.fromJson(value.data);
       emit(successstateproduct());
     }).catchError((error) {
       print(error.toString());
@@ -104,14 +110,16 @@ class appcubit extends Cubit<appstates> {
     });
   }
 
-  Products? productsOfCategoryList;
+  product.Products? productsOfCategoryList;
 
   void getproductsofCategory(int catId) {
     emit(loadingstateproduct());
-    DioHelper.getData(endPoint: '$categories/$catId/$products', token: token)
-        .then((value) {
+    DioHelper.getData(
+      endPoint: '$categories/$catId/$products',
+      token: SharedPrefernce.get(key: SharedKeys().token),
+    ).then((value) {
       print(value.data);
-      productsOfCategoryList = Products.fromJson(value.data);
+      productsOfCategoryList = product.Products.fromJson(value.data);
       emit(successstateproduct());
     }).catchError((error) {
       print(error.toString());
@@ -127,13 +135,10 @@ class appcubit extends Cubit<appstates> {
   }
 
   List<BottomNavigationBarItem> items = [
-    BottomNavigationBarItem(
-        icon: Icon(Icons.shopping_bag_outlined), label: "Shop"),
-    BottomNavigationBarItem(
-        icon: Icon(Icons.explore_outlined), label: "Explore"),
+    BottomNavigationBarItem(icon: Icon(Icons.shopping_bag_outlined), label: "Shop"),
+    BottomNavigationBarItem(icon: Icon(Icons.explore_outlined), label: "Explore"),
     BottomNavigationBarItem(icon: Icon(Icons.card_travel), label: "Cart"),
-    BottomNavigationBarItem(
-        icon: Icon(Icons.favorite_outline), label: "Favourite"),
+    BottomNavigationBarItem(icon: Icon(Icons.favorite_outline), label: "Favourite"),
     BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "Account")
   ];
   int count = 1;
@@ -157,15 +162,15 @@ class appcubit extends Cubit<appstates> {
 
   List screens = [HomeScreen(), Search(), Mycarts(), Favourits(), Accounts()];
 
-  void makeorder(String name, String email, String address, String city,
-      String phone, context) {
+  void makeorder(String name, String email, String address, String city, String phone, context) {
     emit(loadingstateorder());
-    DioHelper.postData(endPoint: orders, token: SharedKeys().token)
-        .then((value) {
+    DioHelper.postData(
+      endPoint: orders,
+      token: SharedPrefernce.get(key: SharedKeys().token),
+    ).then((value) {
       emit(successstateorder());
       print("successful order");
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => orderappceptance()));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => orderappceptance()));
     }).catchError((error) {
       emit(errorstateorder());
       print("failed");
@@ -188,8 +193,7 @@ class appcubit extends Cubit<appstates> {
                     ],
                   ),
                   content: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 15, vertical: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -213,8 +217,7 @@ class appcubit extends Cubit<appstates> {
                         ),
                         Text(
                           "Something went tembly wrong.",
-                          style: TextStyle(
-                              color: Colors.grey.shade400, fontSize: 12),
+                          style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
                         ),
                         SizedBox(
                           height: 10,
@@ -228,16 +231,11 @@ class appcubit extends Cubit<appstates> {
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => Mainhome()));
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => Mainhome()));
                           },
                           child: Text(
                             "back to home",
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold),
+                            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                           ),
                         )
                       ],
@@ -250,12 +248,12 @@ class appcubit extends Cubit<appstates> {
 
   void addProducttocart(int id, int quantity) {
     emit(LoadingStateAddToCart());
-    print('tokeeeeeeeeeeeeeeeeeeeeeen' + token);
+    print('tokeeeeeeeeeeeeeeeeeeeeeen' + SharedPrefernce.get(key: SharedKeys().token));
     DioHelper.postData(
-            endPoint: '$addToCart/$id',
-            data: {'quantity': quantity},
-            token: SharedPrefernce.get(key: SharedKeys().token))
-        .then((value) {
+      endPoint: '$addToCart/$id',
+      data: {'quantity': quantity},
+      token: SharedPrefernce.get(key: SharedKeys().token),
+    ).then((value) {
       emit(SuccessStateAddToCart());
       print(value.data.toString());
     }).catchError((error) {
@@ -264,38 +262,39 @@ class appcubit extends Cubit<appstates> {
     });
   }
 
-  Products? productsInCart;
+  product.Data? productsInCart;
 
   Future<void> getCarts() async {
     emit(LoadingStategetcartt());
-    await DioHelper.getData(
-            endPoint: getCartss,
-            token: SharedPrefernce.get(key: SharedKeys().token))
-        .then((value) {
-      productsInCart = Products.fromJson(value.data);
-      emit(SuccessStategetcartt());
+    await DioHelper.getData(endPoint: getCartss, token: SharedPrefernce.get(key: SharedKeys().token)).then((value) {
       print(value.data.toString());
+      log(jsonEncode(value.data));
+      productsInCart = product.Data.fromJson(value.data);
+      emit(SuccessStategetcartt());
     }).catchError((error) {
       if (error is DioError) {
         print(error.response?.data);
       }
       emit(ErrorStategetcartt());
-      print(error.toString());
+      print("Here"+error.toString());
     });
   }
 
-  Products? p;
+  product.Products? p;
 
   Future search(String name, context) async {
     emit(LoadingStategetsearch());
-    await DioHelper.getData(endPoint: '${searchh}', query: {
-      'name': name,
-    },token: SharedPrefernce.get(key: SharedKeys().token)).then((value) {
-      p = Products.fromJson(value.data);
+    await DioHelper.getData(
+            endPoint: '${searchh}',
+            query: {
+              'name': name,
+            },
+            token: SharedPrefernce.get(key: SharedKeys().token))
+        .then((value) {
+      p = product.Products.fromJson(value.data);
       print(value.toString());
+      // Navigator.push(context, MaterialPageRoute(builder: (context) => SearchOfProduct(name: name,)));
       emit(SuccessStategetsearch());
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => SearchOfProduct()));
       print("found");
     }).catchError((error) {
       print(error.toString());

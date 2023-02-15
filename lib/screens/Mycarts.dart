@@ -29,7 +29,7 @@ class Mycarts extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
-      value: appcubit.get(context)..productsInCart,
+      value: appcubit.get(context)..getCarts(),
       child: BlocConsumer<appcubit, appstates>(
         listener: (context, state) {},
         builder: (context, state) {
@@ -52,12 +52,12 @@ class Mycarts extends StatelessWidget {
                     child: ListView.builder(
                       itemBuilder: (context, index) {
                         return buildContainer(
-                          cubit.productsInCart?.data?.productData?[index] ?? ProductData(),
+                          cubit.productsInCart?.productData?[index] ?? ProductData(),
                           images[index],
                           context,
                         );
                       },
-                      itemCount: cubit.productsInCart?.data?.productData?.length ?? 0,
+                      itemCount: cubit.productsInCart?.productData?.length ?? 0,
                     ),
                   ),
                   button("Go to checkout", () {

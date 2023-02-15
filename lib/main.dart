@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'local/shared_prefernce.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   SharedPrefernce.init();
   DioHelper.init();
   runApp(const MyApp());

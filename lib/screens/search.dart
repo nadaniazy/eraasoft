@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../model/Products.dart';
 import '../network/cubit/states.dart';
+import 'searchofproduct.dart';
 
 class Search extends StatelessWidget {
   Search({Key? key}) : super(key: key);
@@ -68,7 +69,8 @@ class Search extends StatelessWidget {
 
               actions: [
                 IconButton(onPressed: () {
-                  cubit.search(searchcontroller.text, context);
+                  // cubit.search(searchcontroller.text, context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SearchOfProduct(name: searchcontroller.text,)));
                 },
                   icon: Icon(Icons.card_travel_rounded, color: Colors.black,
                     size: 25,),)

@@ -3,29 +3,37 @@ import 'package:eraasoftproject/network/cubit/cubit.dart';
 import 'package:eraasoftproject/network/cubit/states.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-class SearchOfProduct extends StatelessWidget {
-   SearchOfProduct() ;
 
+class SearchOfProduct extends StatelessWidget {
+  String name;
+
+  SearchOfProduct({
+    required this.name,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context)=>appcubit()..p,
-      child: BlocConsumer<appcubit,appstates>(
-        listener: (context,appstates){},
-        builder: (context,states){
-          var cubit=appcubit.get(context);
-          return   cubit.p !=null? Scaffold(
-            backgroundColor: Colors.white,
-              body: Expanded(
-                child: ListView.builder(itemCount: cubit.p!.data!.productData!.length,itemBuilder: (context,index){
-                  return buildContainer(cubit.p!.data!.productData![index]);
-
-                })),
-
-          ):Center(child: CircularProgressIndicator());
-        },
-
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: BlocProvider(
+        create: (context) => appcubit()..search(name, context),
+        child: BlocConsumer<appcubit, appstates>(
+          listener: (context, appstates) {},
+          builder: (context, states) {
+            var cubit = appcubit.get(context);
+            return cubit.p != null
+                ? ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: cubit.p!.data!.productData!.length,
+                  itemBuilder: (context, index) {
+                    return buildContainer(cubit.p!.data!.productData![index]);
+                  },
+                )
+                : Center(
+                    child: CircularProgressIndicator(),
+                  );
+          },
+        ),
       ),
     );
   }
@@ -36,9 +44,20 @@ class SearchOfProduct extends StatelessWidget {
       height: 200,
       child: Column(
         children: [
-          Image(image: AssetImage("assets/chicken.png"),width: 100,height: 100,fit: BoxFit.contain,),
-          Text("${productData.name}",style: TextStyle(fontSize: 15),),
-          Text("4pcs,price",style: TextStyle(color: Colors.grey.shade300),),
+          Image(
+            image: AssetImage("assets/chicken.png"),
+            width: 100,
+            height: 100,
+            fit: BoxFit.contain,
+          ),
+          Text(
+            "${productData.name}",
+            style: TextStyle(fontSize: 15),
+          ),
+          Text(
+            "4pcs,price",
+            style: TextStyle(color: Colors.grey.shade300),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
